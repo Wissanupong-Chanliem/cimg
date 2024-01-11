@@ -1,7 +1,7 @@
 use clap::Parser;
 use image::DynamicImage;
 use image::{io::Reader as ImageReader,EncodableLayout};
-use std::path::{PathBuf, Path};
+use std::path::PathBuf;
 use std::{fs,fs::File};
 use std::io::Write;
 
@@ -41,7 +41,7 @@ fn standard_converter(path:&PathBuf,des:&PathBuf){
     }
     
     img.save(des).unwrap();
-    success_message(file_name_from_Path(path), file_name_from_Path(des))
+    success_message(file_name_from_path(path), file_name_from_path(des))
 }
 
 
@@ -77,7 +77,7 @@ fn success_message(source_name:&str,converted_name:&str){
     println!("Successfully converted source image \"{}\" to \"{}\"",source_name,converted_name);
 }
 
-fn file_name_from_Path(path:&PathBuf)-> &str{
+fn file_name_from_path(path:&PathBuf)-> &str{
     let file_name_os = match path.file_name(){
         Some(name) => name,
         None => panic!("Unable to get file name from given path"),
