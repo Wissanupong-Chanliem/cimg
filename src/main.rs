@@ -1,7 +1,7 @@
 use clap::Parser;
 use image::DynamicImage;
 use image::{io::Reader as ImageReader,EncodableLayout};
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 use std::{fs,fs::File};
 use std::io::Write;
 
@@ -17,59 +17,31 @@ fn main() {
         None => panic!("Cannot identified image format"),
     }.to_str().unwrap();
     match extension.to_lowercase().as_str(){
-        "png" => to_png_image(&args.source_path,&args.destination_path),
+        "png" => standard_converter(&args.source_path,&args.destination_path),
         "webp" => to_webp_image(&args.source_path,&args.destination_path),
-        "jpg" => to_jpg_image(&args.source_path,&args.destination_path),
+        "jpg" => standard_converter(&args.source_path,&args.destination_path),
         _ => panic!("Invalid format"),
     }
 }
 
 
-fn to_png_image(path:&PathBuf,des:&PathBuf){
+fn standard_converter(path:&PathBuf,des:&PathBuf){
     let img = match image::open(path){
         Ok(img_reader) => img_reader,
         Err(e) => panic!("Problem processing image : {}",e),
     };
+    match des.parent(){
+        Some(parent)=>{
+            match parent.to_str() {
+                Some(folder_string) => {let _ = fs::create_dir_all(folder_string).unwrap();},
+                None => panic!("Problem processing image"),
+            }
+        }
+        None=>{}
+    }
     
-    let folder_path= match des.to_str(){
-        Some(folder_string) => folder_string,
-        None => panic!("Problem processing image"),
-    };
-    let file_name = match path.file_stem(){
-        Some(name) => name,
-        None => panic!("Problem processing image"),
-    };
-    let mut des_clone = des.clone();
-    let file_path = match file_name.to_str(){
-        Some(path) => {des_clone.push(format!("{}.png",path));des_clone},
-        None => panic!("Problem processing image :"),
-    };
-    let _ = fs::create_dir_all(folder_path).unwrap();
-    img.save(file_path).unwrap();
+    img.save(des).unwrap();
     success_message(file_name_from_Path(path), file_name_from_Path(des))
-}
-
-fn to_jpg_image(path:&PathBuf,des:&PathBuf){
-    let img = match image::open(path){
-        Ok(img_reader) => img_reader,
-        Err(e) => panic!("Problem processing image : {}",e),
-    };
-    
-    let folder_path= match des.to_str(){
-        Some(folder_string) => folder_string,
-        None => panic!("Problem processing image :"),
-    };
-    let file_name = match path.file_stem(){
-        Some(name) => name,
-        None => panic!("Problem processing image :"),
-    };
-    let mut des_clone = des.clone();
-    let file_path = match file_name.to_str(){
-        Some(path) => {des_clone.push(format!("{}.jpg",path));des_clone},
-        None => panic!("Problem processing image :"),
-    };
-    let _ = fs::create_dir_all(folder_path).unwrap();
-    img.save(file_path).unwrap();
 }
 
 
